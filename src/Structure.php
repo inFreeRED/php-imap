@@ -15,6 +15,7 @@ namespace Webklex\PHPIMAP;
 
 use Webklex\PHPIMAP\Exceptions\InvalidMessageDateException;
 use Webklex\PHPIMAP\Exceptions\MessageContentFetchingException;
+use Webklex\PHPIMAP\Decoder\TNEFPartDecoder;
 
 /**
  * Class Structure
@@ -118,6 +119,11 @@ class Structure {
             if (count($parts) > 1 || !empty($parts[0]->subtype)) {
                 return $parts;
             }
+        }
+
+        if (TNEFPartDecoder::isTNEFEncoded($headers)) {
+            $decoder = new TNEFPartDecoder($headers, $this->header->getConfig());
+            return $decoder->decode($body, $part_number);
         }
 
         return [new Part($body, $this->header->getConfig(), $headers, $part_number)];
